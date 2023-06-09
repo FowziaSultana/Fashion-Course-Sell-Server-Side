@@ -189,10 +189,44 @@ async function run() {
       res.send(result);
     });
 
+    //add one class
     app.post("/classes", verifyJWT, async (req, res) => {
       const newItem = req.body;
       // console.log("from add claass", newItem);
       const result = await classCollection.insertOne(newItem);
+      res.send(result);
+    });
+
+    //update class
+    app.patch("/classes/:id", async (req, res) => {
+      const id = req.params.id;
+      let mystatus = req.query.status;
+      console.log(id);
+      console.log(mystatus);
+
+      const filter = { _id: new ObjectId(id) };
+      let status;
+      switch (mystatus) {
+        case "approved":
+          status = "approved";
+          break;
+        case "denied":
+          status = "denied";
+          break;
+
+        default:
+          // Set a default value in case mystatus is not one of the expected values
+          status = "pending";
+          break;
+      }
+
+      const updateDoc = {
+        $set: {
+          status: status,
+        },
+      };
+
+      const result = await classCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
 
