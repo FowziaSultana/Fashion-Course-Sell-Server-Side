@@ -173,10 +173,14 @@ async function run() {
     });
 
     //==================================CLASS API==================================================
+    app.get("/classes", async (req, res) => {
+      const result = await classCollection.find().toArray();
+      res.send(result);
+    });
 
     app.post("/classes", verifyJWT, async (req, res) => {
       const newItem = req.body;
-      console.log("from add claass", newItem);
+      // console.log("from add claass", newItem);
       const result = await classCollection.insertOne(newItem);
       res.send(result);
     });
