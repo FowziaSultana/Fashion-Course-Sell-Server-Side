@@ -173,8 +173,19 @@ async function run() {
     });
 
     //==================================CLASS API==================================================
+
+    //get all the class
     app.get("/classes", async (req, res) => {
       const result = await classCollection.find().toArray();
+      res.send(result);
+    });
+
+    //get  class by email
+    app.get("/classes/:email", async (req, res) => {
+      const email = req.params.email; // console.log(email);
+      query = { instructorEmail: `${email}` };
+      const result = await classCollection.find(query).toArray();
+      // console.log(result);
       res.send(result);
     });
 
