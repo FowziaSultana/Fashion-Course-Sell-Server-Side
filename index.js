@@ -261,6 +261,21 @@ async function run() {
       res.send(result);
     });
 
+    //get all the  enrolled class details
+    app.get("/enrolledClass", async (req, res) => {
+      const result = await enrolledClassInfoCollection.find().toArray();
+      res.send(result);
+    });
+
+    //delete enrolledclass info
+    app.delete("/enrolledClass/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: new ObjectId(id) };
+      const result = await enrolledClassInfoCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
