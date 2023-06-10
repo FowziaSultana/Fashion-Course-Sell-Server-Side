@@ -51,6 +51,9 @@ async function run() {
 
     const usersCollection = client.db("Fashion-House-DB").collection("users");
     const classCollection = client.db("Fashion-House-DB").collection("class");
+    const enrolledClassInfoCollection = client
+      .db("Fashion-House-DB")
+      .collection("enrolledClassInfo");
 
     app.post("/jwt", (req, res) => {
       const user = req.body;
@@ -197,7 +200,7 @@ async function run() {
       res.send(result);
     });
 
-    //update class
+    //update class status
     app.patch("/classes/:id", async (req, res) => {
       const id = req.params.id;
       let mystatus = req.query.status;
@@ -227,6 +230,34 @@ async function run() {
       };
 
       const result = await classCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    //update only class feedback
+    app.patch("/updatefeedback/:id", async (req, res) => {
+      const id = req.params.id;
+      let myfeedback = req.query.feedback;
+      //  console.log(id);
+      // console.log("feedback", myfeedback);
+
+      const filter = { _id: new ObjectId(id) };
+
+      const updateDoc = {
+        $set: {
+          feedback: myfeedback,
+        },
+      };
+
+      const result = await classCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    //==================================students class enrolled==================================================
+
+    app.post("/enrolledClass", async (req, res) => {
+      const newItem = req.body;
+      // console.log("from add enrolled claass", newItem);
+      const result = await enrolledClassInfoCollection.insertOne(newItem);
       res.send(result);
     });
 
