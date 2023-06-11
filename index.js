@@ -52,6 +52,9 @@ async function run() {
 
     const usersCollection = client.db("Fashion-House-DB").collection("users");
     const classCollection = client.db("Fashion-House-DB").collection("class");
+    const paymentCollection = client
+      .db("Fashion-House-DB")
+      .collection("payments");
     const enrolledClassInfoCollection = client
       .db("Fashion-House-DB")
       .collection("enrolledClassInfo");
@@ -281,8 +284,8 @@ async function run() {
 
     // create payment intent
     app.post("/create-payment-intent", verifyJWT, async (req, res) => {
-      const { price } = req.body;
-      const amount = parseInt(price * 100);
+      const { totalPrice } = req.body;
+      const amount = parseInt(totalPrice * 100);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: "usd",
@@ -295,6 +298,45 @@ async function run() {
     });
 
     //update after completing payment
+    // payment related api
+    app.post("/payments", verifyJWT, async (req, res) => {
+      const payment = req.body;
+      //console.log(payment);
+
+      const insertResult = await paymentCollection.insertOne(payment);
+
+      //updating enrolledclassinfo
+      const enrolledClassId = payment.enrolledClassId;
+      const filter1 = { _id: new ObjectId(enrolledClassId) };
+
+      const updateDoc1 = {
+        $set: {
+          paymentStatus: "completed",
+          isEnrolled: "completed",
+        },
+      };
+      const updateEnrolledClass = await enrolledClassInfoCollection.updateOne(
+        filter1,
+        updateDoc1
+      );
+
+      //updating class
+      const classId = payment.classId;
+      const filter2 = { _id: new ObjectId(classId) };
+      const updateDoc2 = {
+        $inc: { enrolledStudents: 1, seats: -1 },
+      };
+
+      const updateClass = await classCollection.updateOne(filter2, updateDoc2);
+
+      res.send({ updateEnrolledClass, updateClass, insertResult });
+    });
+
+    //get all the payment details
+    app.get("/paymentDetails", async (req, res) => {
+      const result = await paymentCollection.find().toArray();
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
